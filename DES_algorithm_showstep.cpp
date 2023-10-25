@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <stdio.h>
 #include <string>
 #include <stdint.h>
@@ -60,11 +61,13 @@ class DES{
         //setup preprocess the data
         printf("===========================ENCRYPT-PLAINTEXT===========================\n");
         setup_64block(plaintext);
-        print_block_data_hex("After Setup");
+        print_block_data("After Setup");
         initial_permutation();
+        print_block_data("After Initial Permutation");
         feistel_encipher();
+        print_block_data("After Feistel Encipher");
         final_permutation();
-        print_block_data_hex("Cipher in Hex");
+        print_block_data("After Final Permutation");
         print_result_hex();
 
     }
@@ -73,11 +76,13 @@ class DES{
         //setup preprocess the data
         printf("===========================ENCRYPT-STRHEX===========================\n");
         setup_64block_strhex(hextext);
-        print_block_data_hex("After Setup");
+        print_block_data("After Setup");
         initial_permutation();
+        print_block_data("After Initial Permutation");
         feistel_encipher();
+        print_block_data("After Feistel Encipher");
         final_permutation();
-        print_block_data_hex("Cipher in Hex");
+        print_block_data("After Final Permutation");
         print_result_hex();
     }
     // DES decrypt
@@ -87,10 +92,14 @@ class DES{
         setup_64block_strhex(hextext);
         print_block_data_hex("After Setup");
         initial_permutation();
+        print_block_data("After Initial Permutation");
         feistel_decipher();
+        print_block_data("After Feistel Decipher");
         final_permutation();
-        print_block_data_hex("Cipher in Hex");
+        print_block_data_hex("After Final Permutation");
         print_result_hex();
+        print_result_ascii();
+        
     }
     // Setting Up the text and store it 64 bit each
     void setup_64block(std::string plaintext){
@@ -188,11 +197,18 @@ class DES{
         return newdata;
     }
     void key_16generate(ints key){
+        printf("===========================GENERATING-KEY===========================\n");
         memset(keys, 0, sizeof(keys));
+        printf("Start\t: "); printbin(key,64); printf("\n");
         ints keyp1 = key_permute1(key);
+        printf("P1\t: "); printbin(keyp1,64); printf("\n");
         ints C, D;
         C = (keyp1>>(64-28))<<(64-28);
         D = (keyp1>>(64-56))<<(64-28);
+        printf("\nSplits Init\n");
+        printf("C\t: ");printbin(C,64);printf("\n");
+        printf("D\t: ");printbin(D,64); printf("\n");
+        printf("Key\t: -\n");
         for(int i = 0; i<16; i++){
             ints numleft = (i < 2 || (i-1)%7 == 0)?1:2;
             for(int j = 0; j < numleft; j++){
@@ -200,6 +216,10 @@ class DES{
                 D=circular_leftShift(D, 28);
             }
             keys[i] = key_permute2(C | D>>28);
+            printf("\nSplits-%d\n",i+1);
+            printf("C\t: ");printbin(C,64);printf("\n");
+            printf("D\t: ");printbin(D,64); printf("\n");
+            printf("Key\t: ");printbin(keys[i],64); printf("\n");
         }
     }
 
@@ -297,19 +317,29 @@ class DES{
         ints L, R;
         L = (data>>(64-32))<<(64-32);
         R = (data>>(64-64))<<(64-32);
+        printf("===========================FEISTEL ENCIPHER===========================\n");
+        printf("Feistel Round init\n");
+        printf("Left\t: ");printbin(L, 64);printf("\n");
+        printf("Right\t: ");printbin(R, 64);printf("\n");
+        printf("Cipher\t: ");printhex(L, 32);printf(" : ");printhex(R, 32);printf("\n");
         for( int i = 0; i < 16; i++){
             ints Rnew = L^f_function(R, i);
             L = R;
             R = Rnew;
-            // printf("L-%d\t: ", i+1);printbin(L, 64);printf("\n");
-            // printf("R-%d\t: ", i+1);printbin(R, 64);printf("\n");
-            // printf("C-%d\t: ", i+1);printhex(L, 32);printf(" : ");printhex(R, 32);printf("\n");
+            printf("\nFeistel Round %d\n", i+1);
+            printf("Left\t: ");printbin(L, 64);printf("\n");
+            printf("Right\t: ");printbin(R, 64);printf("\n");
+            printf("Cipher\t: ");printhex(L, 32);printf(" : ");printhex(R, 32);printf("\n");
         }
         //SWAP - Feistel
         ints tempL = L;
         L = R;
         R = tempL;
         ints newdata = L | (R>>32);
+        printf("\nFeistel Final SWAP\n");
+        printf("Left\t: ");printbin(L, 64);printf("\n");
+        printf("Right\t: ");printbin(R, 64);printf("\n");
+        printf("Cipher\t: ");printhex(newdata, 64);printf("\n");
         return newdata;
     }
     // DES Feistel Decipher
@@ -322,19 +352,29 @@ class DES{
         ints L, R;
         L = (data>>(64-32))<<(64-32);
         R = (data>>(64-64))<<(64-32);
+        printf("===========================FEISTEL DECIPHER===========================\n");
+        printf("Feistel Round init\n");
+        printf("Left\t: ");printbin(L, 64);printf("\n");
+        printf("Right\t: ");printbin(R, 64);printf("\n");
+        printf("Cipher\t: ");printhex(L, 32);printf(" : ");printhex(R, 32);printf("\n");
         for( int i = 15; i >= 0; i--){
             ints Rnew = L^f_function(R, i);
             L = R;
             R = Rnew;
-            // printf("L-%d\t: ", i+1);printbin(L, 64);printf("\n");
-            // printf("R-%d\t: ", i+1);printbin(R, 64);printf("\n");
-            // printf("C-%d\t: ", i+1);printhex(L, 32);printf(" : ");printhex(R, 32);printf("\n");
+            printf("\nFeistel Round %d\n", i+1);
+            printf("Left\t: ");printbin(L, 64);printf("\n");
+            printf("Right\t: ");printbin(R, 64);printf("\n");
+            printf("Cipher\t: ");printhex(L, 32);printf(" : ");printhex(R, 32);printf("\n");
         }
         //SWAP - Feistel
         ints tempL = L;
         L = R;
         R = tempL;
         ints newdata = L | (R>>32);
+        printf("\nFeistel Final SWAP\n");
+        printf("Left\t: ");printbin(L, 64);printf("\n");
+        printf("Right\t: ");printbin(R, 64);printf("\n");
+        printf("Cipher\t: ");printhex(newdata, 64);printf("\n");
         return newdata;
     }
 
@@ -344,11 +384,9 @@ class DES{
             *(plaintext_bin+i) = sub_final_permutation(*(plaintext_bin+i));
         }
     }
-    
     ints sub_final_permutation(ints data){
         ints newdata = 0;
         ints data_size = 64;
-        //final permutation
         for (int i = 0, num = 40; i < 8; i++, num--) {
             ints pum = num;
             for(int j = 0; j < 8; j++){
@@ -371,7 +409,7 @@ class DES{
     }
     void printhex(ints data, ints size){
         data >>=size;
-        std::cout << std::hex;
+        std::cout << std::setfill('0')<<std::setw(16) << std::hex;
         std::cout << data;
         std::cout << std::dec;
     }
@@ -405,6 +443,14 @@ class DES{
         for(int i = 0; i < plaintext_block; i++){
             printf("%lu\t: ", *(plaintext_bin+i));
             printhex(*(plaintext_bin+i), 64);printf("\n");
+        }
+    }
+    
+    void print_block_data(std::string state){
+        printf("\n@@ DATA in block state - %s\n", state.c_str());
+        printf("     hex data\t\t:\t\tbin data\n");
+        for(int i = 0; i < plaintext_block; i++){
+            printhex(*(plaintext_bin+i), 64);printf("\t: ");printbin(*(plaintext_bin+i), 64);printf("\n");
         }
     }
     
@@ -517,21 +563,3 @@ class DES{
         {22, 11,  4, 25}
     };
 };
-
-int main(){
-
-    DES myenc;
-    std::string plaintext = "KEAMANAN INFORMASI";
-    // C  O  M  P  U  T  E  R
-    // 43 4F 4D 50 55 54 45 52
-    myenc.setKeyStrHex("434F4D5055544552");
-    // myenc.setKeyStrHex("133457769BBCDFF1");
-    // myenc.setKeyInt64(0x133457799BBCDFF1);
-
-    myenc.encrypt(plaintext);
-    myenc.print_result_ascii();
-    // myenc.encrypt_strhex("434F4D5055544552");
-    myenc.decrypt_strhex("1489e94a2d1bf80bf9a88dec36b75878d72fbd59f481cd1b");
-    myenc.print_result_ascii();
-    return 0;
-}

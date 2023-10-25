@@ -1,0 +1,10 @@
+cara menggunakan.
+
+1. compile program dengan `g++ cli-simple.cpp -o des`. Pada repository sudah terdapat program tercompile.
+    Pada waktu compile, saya menggunakan Linux Ubuntu
+2. syntax
+        ./des -[e/d] [hexkey / 8char key] -[text/hex] [input untuk dilakukan Encrypt atau Decrypt]
+3. untuk Key dapat diisikan bebas HEX 16 digit atau string 8 karakter.
+4. untuk menu input ada -hex dan -text sesuai dengan namanya. input dapat berupa hex atau text.
+    @Untuk text yang ada spasinya, gunakan '...' untuk melakukannya. Contoh
+    ./des -e FFAABBCC11223344 -text 'ACHMAD NASHRUDDIN RISKYNANDA'
